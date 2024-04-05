@@ -16,12 +16,18 @@ app.use(express.urlencoded({ extended: true }));
 const filiereRoutes = require('./Filiere/filiereRoutes');
 const etudiantRoutes = require('./Etudiant/etudiantRoutes');
 const moduleRoutes = require('./Module/moduleRoutes');
-//const noteRoutes = require('./collections/note/noteRoutes');
+const noteRoutes = require('./Note/noteRoutes');
+const profRoutes = require('./Professeur/profRoutes');
+const elementmoduleRoutes = require('./ElementModule/elementModuleRoutes');
+const adminRoutes = require('./Admin/adminRoutes');
 
 app.use('/filiere', filiereRoutes);
 app.use('/etudiant', etudiantRoutes);
 app.use('/module', moduleRoutes);
-//app.use('/note', noteRoutes);
+app.use('/note', noteRoutes);
+app.use('/prof', profRoutes);
+app.use('/elementModule', elementmoduleRoutes);
+app.use('/admin', adminRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
