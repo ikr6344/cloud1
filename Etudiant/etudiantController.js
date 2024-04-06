@@ -13,8 +13,14 @@ exports.createEtudiant = async (req, res) => {
       return res.status(404).json({ error: 'La filière spécifiée n\'existe pas.' });
     }
 
+    // Créer le compte d'authentification Firebase
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: motDePasse,
+    });
+
     // Ajouter un nouvel étudiant à la collection "users" dans Firestore
-    const etudiantRef = await db.collection('users').add({
+    const etudiantRef = await db.collection('users').doc(userRecord.uid).set({
       nom: nom,
       prenom: prenom,
       dateNaissance: dateNaissance,

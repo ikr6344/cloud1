@@ -1,25 +1,40 @@
 const admin = require('firebase-admin');
 const db = admin.firestore();
+
+// Fonction pour créer un nouveau professeur
 exports.createProf = async (req, res) => {
-    try {
-      const { nom, prenom, telephone, photo, specialite } = req.body;
-  
-      // Ajouter un nouveau professeur à la collection "users" dans Firestore
-      const profRef = await db.collection('users').add({
-        nom: nom,
-        prenom: prenom,
-        telephone: telephone,
-        role: 'prof',
-        photo: photo,
-        specialite: specialite
-      });
-  
-      res.status(201).json({ message: 'Professeur créé avec succès !', id: profRef.id });
-    } catch (error) {
-      console.error('Erreur lors de la création du professeur :', error);
-      res.status(500).json({ error: 'Erreur serveur lors de la création du professeur.' });
+  try {
+    const { nom, prenom, telephone, photo, specialite, email, motDePasse } = req.body;
+
+    // Vérifier si l'email et le mot de passe sont fournis
+    if (!email || !motDePasse) {
+      return res.status(400).json({ error: 'L\'email et le mot de passe sont requis.' });
     }
-  };
+
+    // Créer le compte d'authentification Firebase
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: motDePasse,
+    });
+
+    // Ajouter un nouveau professeur à la collection "users" dans Firestore
+    const profRef = await db.collection('users').doc(userRecord.uid).set({
+      nom: nom,
+      prenom: prenom,
+      telephone: telephone,
+      role: 'prof',
+      photo: photo,
+      specialite: specialite,
+      email: email
+    });
+
+    res.status(201).json({ message: 'Professeur créé avec succès !', id: profRef.id });
+  } catch (error) {
+    console.error('Erreur lors de la création du professeur :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la création du professeur.' });
+  }
+};
+
   exports.getAllProfs = async (req, res) => {
     try {
       const snapshot = await db.collection('users').where('role', '==', 'prof').get();

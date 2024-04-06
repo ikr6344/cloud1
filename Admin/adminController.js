@@ -4,25 +4,31 @@ const db = admin.firestore();
 // Créer un nouvel administrateur
 exports.createAdmin = async (req, res) => {
   try {
-    const { nom, prenom, telephone, cin, photo } = req.body;
+    const { nom, prenom, telephone, cin, photo, email, password } = req.body;
 
     // Vérifier si l'email est fourni dans le corps de la requête
-    if (!req.body.email) {
-      return res.status(400).json({ error: 'L\'email est requis.' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'L\'email et le mot de passe sont requis.' });
     }
 
-    // Ajouter un nouvel administrateur à la collection "admins" dans Firestore
-    const adminRef = await db.collection('admins').add({
+    // Créer le compte d'authentification Firebase
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: password,
+    });
+
+    // Ajouter un nouvel administrateur à la collection "users" dans Firestore
+    await db.collection('users').doc(userRecord.uid).set({
       nom: nom,
       prenom: prenom,
       telephone: telephone,
       cin: cin,
       photo: photo,
       role: 'admin',
-      email: req.body.email
+      email: email,
     });
 
-    res.status(201).json({ message: 'Administrateur créé avec succès !', id: adminRef.id });
+    res.status(201).json({ message: 'Administrateur créé avec succès !', id: userRecord.uid });
   } catch (error) {
     console.error('Erreur lors de la création de l\'administrateur :', error);
     res.status(500).json({ error: 'Erreur serveur lors de la création de l\'administrateur.' });
@@ -32,7 +38,7 @@ exports.createAdmin = async (req, res) => {
 // Récupérer tous les administrateurs
 exports.getAllAdmins = async (req, res) => {
   try {
-    const snapshot = await db.collection('admins').get();
+    const snapshot = await db.collection('users').where('role', '==', 'admin').get();
     const admins = [];
     snapshot.forEach(doc => {
       admins.push({ id: doc.id, ...doc.data() });
@@ -48,9 +54,9 @@ exports.getAllAdmins = async (req, res) => {
 exports.getAdminById = async (req, res) => {
   try {
     const adminId = req.params.id;
-    const adminDoc = await db.collection('admins').doc(adminId).get();
+    const adminDoc = await db.collection('users').doc(adminId).get();
 
-    if (!adminDoc.exists) {
+    if (!adminDoc.exists || adminDoc.data().role !== 'admin') {
       res.status(404).json({ error: 'Administrateur non trouvé.' });
     } else {
       res.json({ id: adminDoc.id, ...adminDoc.data() });
@@ -67,7 +73,7 @@ exports.updateAdmin = async (req, res) => {
     const adminId = req.params.id;
     const { nom, prenom, telephone, cin, photo } = req.body;
 
-    await db.collection('admins').doc(adminId).update({
+    await db.collection('users').doc(adminId).update({
       nom: nom,
       prenom: prenom,
       telephone: telephone,
@@ -86,7 +92,7 @@ exports.updateAdmin = async (req, res) => {
 exports.deleteAdmin = async (req, res) => {
   try {
     const adminId = req.params.id;
-    await db.collection('admins').doc(adminId).delete();
+    await db.collection('users').doc(adminId).delete();
     res.json({ message: 'Administrateur supprimé avec succès !' });
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'administrateur :', error);
