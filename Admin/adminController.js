@@ -26,6 +26,7 @@ exports.createAdmin = async (req, res) => {
       photo: photo,
       role: 'admin',
       email: email,
+      password:password
     });
 
     res.status(201).json({ message: 'Administrateur créé avec succès !', id: userRecord.uid });

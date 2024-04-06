@@ -25,7 +25,8 @@ exports.createProf = async (req, res) => {
       role: 'prof',
       photo: photo,
       specialite: specialite,
-      email: email
+      email: email,
+      motDePasse:motDePasse
     });
 
     res.status(201).json({ message: 'Professeur créé avec succès !', id: profRef.id });
