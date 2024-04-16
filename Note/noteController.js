@@ -33,6 +33,26 @@ exports.createNote = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la création de la note.' });
   }
 };
+exports.getNotesForElementModule = async (req, res) => {
+  try {
+    const { elementModuleCode } = req.params;
+
+    // Vérifier si l'élément de module existe
+    const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).limit(1).get();
+    if (elementModuleQuery.empty) {
+      return res.status(404).json({ error: 'L\'élément de module spécifié n\'existe pas.' });
+    }
+
+    // Récupérer toutes les notes pour cet élément de module
+    const notesQuery = await db.collection('notes').where('elementModuleCode', '==', elementModuleCode).get();
+    const notes = notesQuery.docs.map(doc => doc.data());
+
+    res.status(200).json(notes);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des notes pour l\'élément de module :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des notes.' });
+  }
+};
 
 // Récupérer toutes les notes
 exports.getAllNotes = async (req, res) => {

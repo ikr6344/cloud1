@@ -4,7 +4,7 @@ const db = admin.firestore();
 // Fonction pour créer un nouveau professeur
 exports.createProf = async (req, res) => {
   try {
-    const { nom, prenom, telephone, photo, specialite, email, motDePasse } = req.body;
+    const { nom, prenom, telephone,CIN, photo, specialite, email, motDePasse } = req.body;
 
     // Vérifier si l'email et le mot de passe sont fournis
     if (!email || !motDePasse) {
@@ -24,6 +24,7 @@ exports.createProf = async (req, res) => {
       telephone: telephone,
       role: 'prof',
       photo: photo,
+      CIN:CIN,
       specialite: specialite,
       email: email,
       motDePasse:motDePasse
@@ -98,4 +99,3 @@ exports.createProf = async (req, res) => {
       res.status(500).json({ error: 'Erreur serveur lors de la suppression du professeur.' });
     }
   };
-  
