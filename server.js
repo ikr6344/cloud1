@@ -1,6 +1,7 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const serviceAccount = require('./key.json');
+const cors = require('cors'); // Ajoutez cette ligne
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -17,6 +18,9 @@ app.use(cors(corsOptions));
 // Middleware pour les données JSON et URL encodées
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Ajoutez cette ligne pour activer CORS pour toutes les routes
+app.use(cors());
 
 // Routes pour chaque collection
 const filiereRoutes = require('./Filiere/filiereRoutes');

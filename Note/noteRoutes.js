@@ -8,5 +8,7 @@ router.get('/', noteController.getAllNotes);
 router.get('/:id', noteController.getNoteById);
 router.put('/:id', noteController.updateNote);
 router.delete('/:id', noteController.deleteNote);
+router.get('/etudiants/:cne/note', noteController.getNoteByEtudiantCNE);
+router.get('/:elementModuleCode/notes', noteController.getNotesForElementModule);
 
 module.exports = router;
