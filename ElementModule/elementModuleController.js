@@ -4,12 +4,12 @@ const db = admin.firestore();
 // Créer un nouvel élément de module
 exports.createElementModule = async (req, res) => {
   try {
-    const { code, nom, description, pourcentage, moduleCode, profCIN } = req.body;
+    const { code, nom, description, pourcentage, moduleId, profCIN } = req.body;
 
     // Vérifier si le module existe
-    const moduleDoc = await db.collection('modules').where('code', '==', moduleCode).limit(1).get();
-
-    if (moduleDoc.empty) {
+    const moduleRef = db.collection('modules').doc(moduleId);
+    const moduleDoc = await moduleRef.get();
+    if (!moduleDoc.exists) {
       return res.status(404).json({ error: 'Le module spécifié n\'existe pas.' });
     }
 
@@ -26,7 +26,7 @@ exports.createElementModule = async (req, res) => {
       nom: nom,
       description: description,
       pourcentage: pourcentage,
-      moduleCode: moduleCode,  
+      moduleId: moduleRef,  
       profCIN: profCIN  
     });
 

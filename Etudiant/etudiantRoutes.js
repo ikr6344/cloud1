@@ -16,5 +16,8 @@ router.put('/:id', etudiantController.updateEtudiant);
 
 // Route pour supprimer un étudiant par son ID
 router.delete('/:id', etudiantController.deleteEtudiant);
+router.get('/filiere/:id', etudiantController.getEtudiantsByFiliere);
+router.get('/module/:moduleId', etudiantController.getEtudiantsByModule);
+router.get('/elementmodule/:elementModuleId', etudiantController.getEtudiantsByElementModule);
 
 module.exports = router;

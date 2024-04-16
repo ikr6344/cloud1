@@ -114,3 +114,86 @@ exports.deleteEtudiant = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la suppression de l\'étudiant.' });
   }
 };
+// etudiantController.js
+
+// Récupérer tous les étudiants d'une filière spécifique
+exports.getEtudiantsByFiliere = async (req, res) => {
+  try {
+    const filiereId = req.params.id; // Récupérer l'ID de la filière depuis les paramètres de la requête
+
+    // Effectuer une requête pour récupérer tous les étudiants de la filière spécifiée
+    const snapshot = await db.collection('users').where('role', '==', 'etudiant').where('filiere', '==', db.collection('filiere').doc(filiereId)).get();
+
+    const etudiants = [];
+    snapshot.forEach(doc => {
+      etudiants.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.json(etudiants);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des étudiants de la filière :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des étudiants de la filière.' });
+  }
+};
+exports.getEtudiantsByModule = async (req, res) => {
+  try {
+    
+    const moduleId = req.params.moduleId; // Récupérer l'ID du module depuis les paramètres de la requête
+
+    // Récupérer l'ID de la filière associée à ce module
+    const moduleDoc = await db.collection('modules').doc(moduleId).get();
+    if (!moduleDoc.exists) {
+      return res.status(404).json({ error: 'Module non trouvé.' });
+    }
+
+    const filiereId = moduleDoc.data().filiereId;
+
+    // Récupérer tous les étudiants de la filière associée au module spécifié
+    const snapshot = await db.collection('users').where('role', '==', 'etudiant').where('filiere', '==', db.collection('filiere').doc(filiereId)).get();
+
+    const etudiants = [];
+    snapshot.forEach(doc => {
+      etudiants.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.json(etudiants);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des étudiants pour le module :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des étudiants pour le module.' });
+  }
+};exports.getEtudiantsByElementModule = async (req, res) => {
+  try {
+    const elementModuleId = req.params.elementModuleId;
+    console.log("ID de l'élément de module :", elementModuleId); // Ajout du log pour vérifier l'ID
+
+    const elementModuleDoc = await db.collection('elementModule').doc(elementModuleId).get();
+    if (!elementModuleDoc.exists) {
+      return res.status(404).json({ error: 'Élément de module non trouvé.' });
+    }
+
+    const moduleId = elementModuleDoc.data().moduleId.id; // Obtenir l'ID du module à partir de l'objet DocumentReference
+    console.log("ID du module associé à l'élément de module :", moduleId); // Ajout du log pour vérifier l'ID du module
+
+    const moduleDoc = await db.collection('modules').doc(moduleId).get();
+    if (!moduleDoc.exists) {
+      return res.status(404).json({ error: 'Module non trouvé.' });
+    }
+
+    const filiereId = moduleDoc.data().filiereId;
+    console.log("ID de la filière associée au module :", filiereId); // Ajout du log pour vérifier l'ID de la filière
+    if (typeof filiereId !== 'string' || filiereId.trim() === '') {
+      return res.status(400).json({ error: 'ID de filière invalide.' });
+    }
+    
+    const snapshot = await db.collection('users').where('role', '==', 'etudiant').where('filiere', '==', db.collection('filiere').doc(filiereId)).get();
+    const etudiants = [];
+    snapshot.forEach(doc => {
+      etudiants.push({ id: doc.id, ...doc.data() });
+    });
+
+    res.json(etudiants);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des étudiants pour l\'élément de module :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des étudiants pour l\'élément de module.' });
+  }
+};
