@@ -171,7 +171,8 @@ exports.getEtudiantsByModule = async (req, res) => {
     console.error('Erreur lors de la récupération des étudiants pour le module :', error);
     res.status(500).json({ error: 'Erreur serveur lors de la récupération des étudiants pour le module.' });
   }
-};exports.getEtudiantsByElementModule = async (req, res) => {
+};
+exports.getEtudiantsByElementModule = async (req, res) => {
   try {
     const elementModuleId = req.params.elementModuleId;
     console.log("ID de l'élément de module :", elementModuleId); // Ajout du log pour vérifier l'ID
@@ -205,5 +206,26 @@ exports.getEtudiantsByModule = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la récupération des étudiants pour l\'élément de module :', error);
     res.status(500).json({ error: 'Erreur serveur lors de la récupération des étudiants pour l\'élément de module.' });
+  }
+};
+// Fonction pour récupérer un étudiant par son CNE
+exports.getEtudiantByCNE = async (req, res) => {
+  try {
+    const cne = req.params.cne; // Récupérer le CNE depuis les paramètres de la requête
+
+    // Effectuer une requête pour récupérer l'étudiant avec le CNE spécifié
+    const etudiantQuery = await db.collection('users').where('CNE', '==', cne).where('role', '==', 'etudiant').limit(1).get();
+    
+    if (etudiantQuery.empty) {
+      return res.status(404).json({ error: 'Aucun étudiant trouvé avec ce CNE.' });
+    }
+
+    // Récupérer les données de l'étudiant trouvé
+    const etudiantData = etudiantQuery.docs[0].data();
+
+    res.json(etudiantData);
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'étudiant par CNE :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération de l\'étudiant par CNE.' });
   }
 };

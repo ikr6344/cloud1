@@ -4,7 +4,7 @@ const db = admin.firestore();
 // Créer un nouvel élément de module
 exports.createElementModule = async (req, res) => {
   try {
-    const { code, nom, description, pourcentage, moduleId, profCIN } = req.body;
+    const { code, nom, description, pourcentage, moduleId, profCIN,AnneeUniversitaire } = req.body;
 
     // Vérifier si le module existe
     const moduleRef = db.collection('modules').doc(moduleId);
@@ -26,6 +26,7 @@ exports.createElementModule = async (req, res) => {
       nom: nom,
       description: description,
       pourcentage: pourcentage,
+      AnneeUniversitaire:AnneeUniversitaire,
       moduleId: moduleRef,  
       profCIN: profCIN  
     });
@@ -34,6 +35,34 @@ exports.createElementModule = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la création de l\'élément de module :', error);
     res.status(500).json({ error: 'Erreur serveur lors de la création de l\'élément de module.' });
+  }
+};
+exports.getElementModulesByCode = async (req, res) => {
+  try {
+    const { code } = req.params; // Récupérer le code à partir des paramètres de la requête
+
+    // Effectuer une requête à la base de données pour récupérer les éléments de module correspondant au code spécifié
+    const elementModulesQuery = await db.collection('elementModule').where('code', '==', code).get();
+    
+    // Vérifier si des éléments de module ont été trouvés
+    if (elementModulesQuery.empty) {
+      return res.status(404).json({ error: 'Aucun élément de module trouvé pour le code spécifié.' });
+    }
+
+    // Récupérer les données des éléments de module trouvés et les renvoyer en tant que réponse
+    const elementModules = [];
+    elementModulesQuery.forEach(doc => {
+      const elementModuleData = doc.data();
+      elementModules.push({
+        id: doc.id,
+        ...elementModuleData
+      });
+    });
+    
+    res.status(200).json(elementModules);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des éléments de module par code :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des éléments de module par code.' });
   }
 };
 
@@ -106,7 +135,7 @@ exports.getAllElementModulesForProf = async (req, res) => {
     const profCIN = req.params.profCIN; // Récupérer l'ID du professeur depuis les paramètres de la requête
 
     // Effectuer une requête pour récupérer les éléments de module associés à ce professeur
-    const snapshot = await db.collection('elementModule').where('profCIN', '==', profCIN).get();
+    const snapshot = await db.collection('elementModule').where('profCIN', '==', profCIN).where('AnneeUniversitaire', '==', req.params.AnneeUniversitaire).get();
     
     const elementModules = [];
     snapshot.forEach(doc => {
@@ -119,3 +148,36 @@ exports.getAllElementModulesForProf = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la récupération des éléments de module.' });
   }
 };
+exports.getProfByElementModuleCode = async (req, res) => {
+  try {
+    const elementModuleCode = req.params.elementModuleCode;
+
+    // Recherche de l'élément de module par code
+    const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).limit(1).get();
+
+    // Vérification si l'élément de module existe
+    if (elementModuleQuery.empty) {
+      return res.status(404).json({ error: 'L\'élément de module spécifié n\'existe pas.' });
+    }
+
+    // Récupération des données de l'élément de module
+    const elementModuleData = elementModuleQuery.docs[0].data();
+
+    // Récupération des informations du professeur en utilisant le CIN du prof stocké dans l'élément de module
+    const profCIN = elementModuleData.profCIN;
+    const profQuery = await db.collection('users').where('CIN', '==', profCIN).where('role', '==', 'prof').limit(1).get();
+
+    // Vérification si le professeur existe
+    if (profQuery.empty) {
+      return res.status(404).json({ error: 'Le professeur spécifié n\'existe pas.' });
+    }
+
+    // Envoi des informations du professeur en réponse
+    const profData = profQuery.docs[0].data();
+    res.json(profData);
+  } catch (error) {
+    console.error('Erreur lors de la récupération du professeur :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération du professeur.' });
+  }
+};
+
