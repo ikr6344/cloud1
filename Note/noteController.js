@@ -2,12 +2,12 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 exports.createNote = async (req, res) => {
   try {
-    const { noteControlle, noteExam, elementModuleCode, etudiantCNE, Status } = req.body;
+    const { note, bareme, elementModuleCode, etudiantCNE, Status, AnneeUniversitaire } = req.body;
 
     // Vérifier si l'élément de module existe
-    const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).limit(1).get();
+    const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).where('AnneeUniversitaire', '==', AnneeUniversitaire).limit(1).get();
     if (elementModuleQuery.empty) {
-      return res.status(404).json({ error: 'L\'élément de module spécifié n\'existe pas.' });
+      return res.status(404).json({ error: 'L\'élément de module spécifié n\'existe pas pour cette année universitaire.' });
     }
     const elementModuleData = elementModuleQuery.docs[0].data();
 
@@ -20,11 +20,12 @@ exports.createNote = async (req, res) => {
 
     // Ajouter une nouvelle note à la collection "notes" dans Firestore
     await db.collection('notes').add({
-      noteControlle: noteControlle,
-      noteExam: noteExam,
+      note: note,
+      bareme: bareme,
       elementModuleCode: elementModuleCode,  // Code de l'élément de module
       etudiantCNE: etudiantCNE, // CNE de l'étudiant
-      Status: Status 
+      Status: Status,
+      AnneeUniversitaire: AnneeUniversitaire
     });
 
     res.status(201).json({ message: 'Note créée avec succès !' });
@@ -33,6 +34,7 @@ exports.createNote = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la création de la note.' });
   }
 };
+
 exports.getNotesForElementModule = async (req, res) => {
   try {
     const { elementModuleCode } = req.params;
@@ -138,6 +140,42 @@ exports.getNoteByEtudiantCNE = async (req, res) => {
 
     if (noteQuery.empty) {
       return res.status(404).json({ error: 'La note de l\'étudiant spécifié n\'existe pas.' });
+    }
+
+    // Extraire les données de la note
+    const noteData = noteQuery.docs[0].data();
+
+    res.json(noteData); // Retourner les données de la note
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la note de l\'étudiant :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération de la note de l\'étudiant.' });
+  }
+};
+exports.getNoteByEtudiantCNEEtModule = async (req, res) => {
+  try {
+    const { cne, elementModuleCode } = req.params; // Récupérer le CNE de l'étudiant et le code de l'élément de module
+    // Rechercher l'élément de module correspondant au code spécifié
+    const elementModuleQuery = await db.collection('elementModule')
+      .where('code', '==', elementModuleCode)
+      .limit(1)
+      .get();
+
+    if (elementModuleQuery.empty) {
+      return res.status(404).json({ error: `L'élément de module spécifié avec le code ${elementModuleCode} n'existe pas.` });
+    }
+
+    // Récupérer l'ID de l'élément de module
+    const elementModuleId = elementModuleQuery.docs[0].id;
+
+    // Rechercher la note de l'étudiant pour l'élément de module spécifié
+    const noteQuery = await db.collection('notes')
+      .where('etudiantCNE', '==', cne)
+      .where('elementModuleCode', '==', elementModuleCode)
+      .limit(1)
+      .get();
+
+    if (noteQuery.empty) {
+      return res.status(404).json({ error: `La note de l'étudiant spécifié pour l'élément de module spécifié n'existe pas.` });
     }
 
     // Extraire les données de la note

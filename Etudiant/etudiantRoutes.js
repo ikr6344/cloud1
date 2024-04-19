@@ -13,11 +13,11 @@ router.get('/:id', etudiantController.getEtudiantById);
 
 // Route pour mettre à jour un étudiant par son ID
 router.put('/:id', etudiantController.updateEtudiant);
-
 // Route pour supprimer un étudiant par son ID
 router.delete('/:id', etudiantController.deleteEtudiant);
 router.get('/filiere/:id', etudiantController.getEtudiantsByFiliere);
 router.get('/module/:moduleId', etudiantController.getEtudiantsByModule);
 router.get('/elementmodule/:elementModuleId', etudiantController.getEtudiantsByElementModule);
+router.get('/etudiant/:cne', etudiantController.getEtudiantByCNE);
 
 module.exports = router;
