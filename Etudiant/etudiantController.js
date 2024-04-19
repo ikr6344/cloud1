@@ -4,7 +4,7 @@ const db = admin.firestore();
 // Fonction pour créer un nouvel étudiant
 exports.createEtudiant = async (req, res) => {
   try {
-    const { nom, prenom, dateNaissance, CIN, CNE, email, motDePasse, photo, filiereId, role } = req.body;
+    const { students, filiereId } = req.body;
 
     // Vérifier si la filière existe
     const filiereRef = db.collection('filiere').doc(filiereId);
@@ -13,32 +13,42 @@ exports.createEtudiant = async (req, res) => {
       return res.status(404).json({ error: 'La filière spécifiée n\'existe pas.' });
     }
 
-    // Créer le compte d'authentification Firebase
-    const userRecord = await admin.auth().createUser({
-      email: email,
-      password: motDePasse,
-    });
+    // Create an array to hold references to the newly created students
+    const etudiantRefs = [];
 
-    // Ajouter un nouvel étudiant à la collection "users" dans Firestore
-    const etudiantRef = await db.collection('users').doc(userRecord.uid).set({
-      nom: nom,
-      prenom: prenom,
-      dateNaissance: dateNaissance,
-      CIN: CIN,
-      CNE: CNE,
-      email: email,
-      motDePasse: motDePasse,
-      role: "etudiant",
-      photo: photo,
-      filiere: filiereRef // Référence directe vers la filière
-    });
+    // Loop through each student in the array and create them
+    for (const student of students) {
+      // Créer le compte d'authentification Firebase
+      const userRecord = await admin.auth().createUser({
+        email: student.email,
+        password: student.motDePasse,
+      });
 
-    res.status(201).json({ message: 'Étudiant créé avec succès !', id: etudiantRef.id });
+      // Ajouter un nouvel étudiant à la collection "users" dans Firestore
+      const etudiantRef = await db.collection('users').doc(userRecord.uid).set({
+        nom: student.nom,
+        prenom: student.prenom,
+        dateNaissance: student.dateNaissance,
+        CIN: student.CIN,
+        CNE: student.CNE,
+        email: student.email,
+        motDePasse: student.motDePasse,
+        role: "etudiant",
+        photo: student.photo,
+        filiere: filiereRef // Référence directe vers la filière
+      });
+
+      etudiantRefs.push(etudiantRef.id);
+    }
+
+    res.status(201).json({ message: 'Étudiants créés avec succès !', ids: etudiantRefs });
   } catch (error) {
-    console.error('Erreur lors de la création de l\'étudiant :', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la création de l\'étudiant.' });
+    console.error('Erreur lors de la création des étudiants :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la création des étudiants.' });
   }
 };
+
+
 
 // Récupérer tous les étudiants
 exports.getAllEtudiants = async (req, res) => {

@@ -7,7 +7,13 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
+const cors = require('cors');
 const app = express();
+const corsOptions = {
+  origin: 'http://localhost:3001',
+};
+
+app.use(cors(corsOptions));
 
 // Middleware pour les données JSON et URL encodées
 app.use(express.json());
