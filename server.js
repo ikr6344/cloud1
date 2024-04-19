@@ -1,8 +1,6 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const serviceAccount = require('./key.json');
-const cors = require('cors'); // Ajoutez cette ligne
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -10,8 +8,16 @@ admin.initializeApp({
 const cors = require('cors');
 const app = express();
 const corsOptions = {
-  origin: 'http://localhost:3001', // Change this to your frontend URL
+  origin: function (origin, callback) {
+    const allowedOrigins = ['http://localhost:3001', 'https://n-fbk56xdabywdhcimuefeji2byh2tmn3qv4kblpi-0lu-script.googleusercontent.com'];
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 };
+
 
 app.use(cors(corsOptions));
 

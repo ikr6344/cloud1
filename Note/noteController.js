@@ -2,7 +2,7 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 exports.createNote = async (req, res) => {
   try {
-    const { noteControlle, noteExam, elementModuleCode, etudiantCNE, Status } = req.body;
+    const { noteTotal, bareme, elementModuleCode, etudiantCNE, Status } = req.body;
 
     // Vérifier si l'élément de module existe
     const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).limit(1).get();
@@ -20,11 +20,11 @@ exports.createNote = async (req, res) => {
 
     // Ajouter une nouvelle note à la collection "notes" dans Firestore
     await db.collection('notes').add({
-      noteControlle: noteControlle,
-      noteExam: noteExam,
+      noteTotal: noteTotal,
+      bareme: bareme,
       elementModuleCode: elementModuleCode,  // Code de l'élément de module
       etudiantCNE: etudiantCNE, // CNE de l'étudiant
-      Status: Status 
+      Status: Status
     });
 
     res.status(201).json({ message: 'Note créée avec succès !' });
