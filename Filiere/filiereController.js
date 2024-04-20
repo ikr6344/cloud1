@@ -8,7 +8,8 @@ exports.createFiliere = async (req, res) => {
 
     const filiereRef = await db.collection('filiere').add({
       nom: nom,
-      description: description
+      description: description,
+      timeStamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
     res.status(201).json({ message: 'Filière créée avec succès !', id: filiereRef.id });

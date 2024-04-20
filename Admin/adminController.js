@@ -26,7 +26,8 @@ exports.createAdmin = async (req, res) => {
       photo: photo,
       role: 'admin',
       email: email,
-      password:password
+      password:password,
+      timeStamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
     res.status(201).json({ message: 'Administrateur créé avec succès !', id: userRecord.uid });

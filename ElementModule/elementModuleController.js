@@ -4,19 +4,19 @@ const db = admin.firestore();
 // Créer un nouvel élément de module
 exports.createElementModule = async (req, res) => {
   try {
-    const { code, nom, description, pourcentage, moduleId, profCIN,AnneeUniversitaire } = req.body;
+    const { code, nom, description, pourcentage, moduleId, profCIN, AnneeUniversitaire } = req.body;
 
     // Vérifier si le module existe
     const moduleRef = db.collection('modules').doc(moduleId);
     const moduleDoc = await moduleRef.get();
     if (!moduleDoc.exists) {
-      return res.status(404).json({ error: 'Le module spécifié n\'existe pas.' });
+      return res.status(500).json({ error: 'Le module spécifié n\'existe pas.' });
     }
 
     // Vérifier si le professeur existe
     const ProfQuery = await db.collection('users').where('CIN', '==', profCIN).where('role', '==', 'prof').limit(1).get();
     if (ProfQuery.empty) {
-      return res.status(404).json({ error: 'Le professeur spécifié n\'existe pas.' });
+      return res.status(500).json({ error: 'Le professeur spécifié n\'existe pas.' });
     }
     const profData = ProfQuery.docs[0].data(); // Correction ici
 
@@ -26,9 +26,9 @@ exports.createElementModule = async (req, res) => {
       nom: nom,
       description: description,
       pourcentage: pourcentage,
-      AnneeUniversitaire:AnneeUniversitaire,
-      moduleId: moduleRef,  
-      profCIN: profCIN  
+      AnneeUniversitaire: AnneeUniversitaire,
+      moduleId: moduleRef,
+      profCIN: profCIN
     });
 
     res.status(201).json({ message: 'Élément de module créé avec succès !', id: elementModuleRef.id });
@@ -43,7 +43,7 @@ exports.getElementModulesByCode = async (req, res) => {
 
     // Effectuer une requête à la base de données pour récupérer les éléments de module correspondant au code spécifié
     const elementModulesQuery = await db.collection('elementModule').where('code', '==', code).get();
-    
+
     // Vérifier si des éléments de module ont été trouvés
     if (elementModulesQuery.empty) {
       return res.status(404).json({ error: 'Aucun élément de module trouvé pour le code spécifié.' });
@@ -58,7 +58,7 @@ exports.getElementModulesByCode = async (req, res) => {
         ...elementModuleData
       });
     });
-    
+
     res.status(200).json(elementModules);
   } catch (error) {
     console.error('Erreur lors de la récupération des éléments de module par code :', error);
@@ -136,7 +136,7 @@ exports.getAllElementModulesForProf = async (req, res) => {
 
     // Effectuer une requête pour récupérer les éléments de module associés à ce professeur
     const snapshot = await db.collection('elementModule').where('profCIN', '==', profCIN).where('AnneeUniversitaire', '==', req.params.AnneeUniversitaire).get();
-    
+
     const elementModules = [];
     snapshot.forEach(doc => {
       elementModules.push({ id: doc.id, ...doc.data() });
