@@ -4,13 +4,23 @@ const db = admin.firestore();
 // Fonction pour créer un nouveau module
 exports.createModule = async (req, res) => {
   try {
-    const { code, nom, abreviation, filiereId } = req.body;
+    const { moduleData, filiereId } = req.body;
 
+    // Vérifier si la filière existe
+    const filiereRef = db.collection('filiere').doc(filiereId);
+    const filiereDoc = await filiereRef.get();
+    if (!filiereDoc.exists) {
+      return res.status(404).json({ error: 'La filière spécifiée n\'existe pas.' });
+    }
+
+    // Ajouter le module à la collection "modules" dans Firestore
     await db.collection('modules').add({
-      code: code,
-      nom: nom,
-      abreviation: abreviation,
-      filiereId: filiereId
+      code: moduleData.code,
+      nom: moduleData.nom,
+      semestre: moduleData.semestre,
+      filiereId: filiereRef,
+      timeStamp: admin.firestore.FieldValue.serverTimestamp()
+       // Référence directe vers la filière
     });
 
     res.status(201).json({ message: 'Module créé avec succès !' });
@@ -19,6 +29,7 @@ exports.createModule = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la création du module.' });
   }
 };
+
 
 // Fonction pour récupérer tous les modules
 exports.getAllModules = async (req, res) => {

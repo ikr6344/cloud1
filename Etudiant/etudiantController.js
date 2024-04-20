@@ -8,7 +8,10 @@ exports.createEtudiant = async (req, res) => {
 
     // Vérifier si la filière existe
     const filiereRef = db.collection('filiere').doc(filiereId);
+    console.log('filiereRef:', filiereRef);
+
     const filiereDoc = await filiereRef.get();
+    console.log('filiereDoc:', filiereDoc);
     if (!filiereDoc.exists) {
       return res.status(404).json({ error: 'La filière spécifiée n\'existe pas.' });
     }
@@ -35,7 +38,9 @@ exports.createEtudiant = async (req, res) => {
         motDePasse: student.motDePasse,
         role: "etudiant",
         photo: student.photo,
-        filiere: filiereRef // Référence directe vers la filière
+        filiere: filiereRef,// Référence directe vers la filière
+        authUserId: userRecord.uid,
+        timeStamp: admin.firestore.FieldValue.serverTimestamp()
       });
 
       etudiantRefs.push(etudiantRef.id);
@@ -117,13 +122,29 @@ exports.updateEtudiant = async (req, res) => {
 exports.deleteEtudiant = async (req, res) => {
   try {
     const etudiantId = req.params.id;
+
+    const studentDoc = await db.collection('users').doc(etudiantId).get();
+
+    if (!studentDoc.exists) {
+      return res.status(404).json({ error: 'Étudiant non trouvé.' });
+    }
+
+    const authUserId = studentDoc.data().authUserId;
+
+    // Delete the user record from Firebase Authentication
+    await admin.auth().deleteUser(authUserId);
+
+    // Delete the student document from Firestore
     await db.collection('users').doc(etudiantId).delete();
+
     res.json({ message: 'Étudiant supprimé avec succès !' });
+
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'étudiant :', error);
     res.status(500).json({ error: 'Erreur serveur lors de la suppression de l\'étudiant.' });
   }
 };
+
 // etudiantController.js
 
 // Récupérer tous les étudiants d'une filière spécifique
@@ -147,7 +168,7 @@ exports.getEtudiantsByFiliere = async (req, res) => {
 };
 exports.getEtudiantsByModule = async (req, res) => {
   try {
-    
+
     const moduleId = req.params.moduleId; // Récupérer l'ID du module depuis les paramètres de la requête
 
     // Récupérer l'ID de la filière associée à ce module
@@ -195,7 +216,7 @@ exports.getEtudiantsByElementModule = async (req, res) => {
     if (typeof filiereId !== 'string' || filiereId.trim() === '') {
       return res.status(400).json({ error: 'ID de filière invalide.' });
     }
-    
+
     const snapshot = await db.collection('users').where('role', '==', 'etudiant').where('filiere', '==', db.collection('filiere').doc(filiereId)).get();
     const etudiants = [];
     snapshot.forEach(doc => {
@@ -215,7 +236,7 @@ exports.getEtudiantByCNE = async (req, res) => {
 
     // Effectuer une requête pour récupérer l'étudiant avec le CNE spécifié
     const etudiantQuery = await db.collection('users').where('CNE', '==', cne).where('role', '==', 'etudiant').limit(1).get();
-    
+
     if (etudiantQuery.empty) {
       return res.status(404).json({ error: 'Aucun étudiant trouvé avec ce CNE.' });
     }

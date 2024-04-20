@@ -2,10 +2,11 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 exports.createNote = async (req, res) => {
   try {
-    const { note, bareme, elementModuleCode, etudiantCNE, Status, AnneeUniversitaire } = req.body;
+
+    const { note, bareme, elementModuleCode, etudiantCNE, status } = req.body;
 
     // Vérifier si l'élément de module existe
-    const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).where('AnneeUniversitaire', '==', AnneeUniversitaire).limit(1).get();
+    const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).limit(1).get();
     if (elementModuleQuery.empty) {
       return res.status(404).json({ error: 'L\'élément de module spécifié n\'existe pas pour cette année universitaire.' });
     }
@@ -24,8 +25,9 @@ exports.createNote = async (req, res) => {
       bareme: bareme,
       elementModuleCode: elementModuleCode,  // Code de l'élément de module
       etudiantCNE: etudiantCNE, // CNE de l'étudiant
-      Status: Status,
-      AnneeUniversitaire: AnneeUniversitaire
+      Status: status,
+      AnneeUniversitaire: '2023/2024',
+      timeStamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
     res.status(201).json({ message: 'Note créée avec succès !' });
