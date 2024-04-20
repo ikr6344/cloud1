@@ -190,7 +190,7 @@ exports.getEtudiantsByElementModule = async (req, res) => {
       return res.status(404).json({ error: 'Module non trouvé.' });
     }
 
-    const filiereId = moduleDoc.data().filiereId;
+    const filiereId = moduleDoc.data().filiereId.id;
     console.log("ID de la filière associée au module :", filiereId); // Ajout du log pour vérifier l'ID de la filière
     if (typeof filiereId !== 'string' || filiereId.trim() === '') {
       return res.status(400).json({ error: 'ID de filière invalide.' });

@@ -11,5 +11,6 @@ router.delete('/:id', noteController.deleteNote);
 router.get('/etudiants/:cne/note', noteController.getNoteByEtudiantCNE);
 router.get('/:elementModuleCode/notes', noteController.getNotesForElementModule);
 router.get('/etudiants/:cne/elementmodule/:elementModuleCode/note', noteController.getNoteByEtudiantCNEEtModule);
+router.get('/notes/:elementModuleCode/:AnneeUniversitaire', noteController.getNotesByElementModuleCodeetAnnee);
 
 module.exports = router;

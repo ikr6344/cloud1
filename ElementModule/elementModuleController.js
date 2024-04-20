@@ -181,3 +181,36 @@ exports.getProfByElementModuleCode = async (req, res) => {
   }
 };
 
+exports.getElementsModuleProf = async (req, res) => {
+  try {
+    const { profCIN } = req.params;
+
+    // Vérifier si le professeur existe
+    const profQuery = await db.collection('users').where('CIN', '==', profCIN).where('role', '==', 'prof').limit(1).get();
+    if (profQuery.empty) {
+      return res.status(404).json({ error: 'Le professeur spécifié n\'existe pas.' });
+    }
+    const profData = profQuery.docs[0].data();
+
+    // Récupérer les éléments de module associés au professeur
+    const elementsModuleQuery = await db.collection('elementModule').where('profCIN', '==', profCIN).get();
+    const elementsModule = [];
+    elementsModuleQuery.forEach(doc => {
+      const elementModule = doc.data();
+      elementsModule.push({
+        id: doc.id,
+        code: elementModule.code,
+        nom: elementModule.nom,
+        description: elementModule.description,
+        pourcentage: elementModule.pourcentage,
+        AnneeUniversitaire: elementModule.AnneeUniversitaire,
+        moduleId: elementModule.moduleId.id // Correction ici
+      });
+    });
+
+    res.status(200).json({ elementsModule });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des éléments de module pour le professeur :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des éléments de module pour le professeur.' });
+  }
+};

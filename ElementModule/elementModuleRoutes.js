@@ -17,5 +17,6 @@ router.delete('/:id', elementModuleController.deleteElementModule);
 router.get('/elementModules/prof/:profCIN/:AnneeUniversitaire', elementModuleController.getAllElementModulesForProf);
 router.get('/elementModule/:code', elementModuleController.getElementModulesByCode);
 router.get('/:elementModuleCode/prof', elementModuleController.getProfByElementModuleCode);
+router.get('/prof/:profCIN/elements', elementModuleController.getElementsModuleProf);
 
 module.exports = router;
