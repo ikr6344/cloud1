@@ -8,9 +8,9 @@ exports.createElementModule = async (req, res) => {
 
     const moduleQuery = await db.collection('modules').where('code', '==', moduleId).limit(1).get();
     if (moduleQuery.empty) {
-        return res.status(404).json({ error: 'Le module spécifié n\'existe pas.' });
+      return res.status(404).json({ error: 'Le module spécifié n\'existe pas.' });
     }
-    
+
     const moduleRef = moduleQuery.docs[0].id;
 
     // Vérifier si le professeur existe

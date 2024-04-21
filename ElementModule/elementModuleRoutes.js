@@ -15,7 +15,7 @@ router.put('/:id', elementModuleController.updateElementModule);
 // Route pour supprimer un élément de module par son ID
 router.delete('/:id', elementModuleController.deleteElementModule);
 router.get('/elementModules/prof/:profCIN/:AnneeUniversitaire', elementModuleController.getAllElementModulesForProf);
-router.get('/elementModule/:code', elementModuleController.getElementModulesByCode);
+router.get('/elementModule/:code', elementModuleController.getElementModuleByCode);
 router.get('/:elementModuleCode/prof', elementModuleController.getProfByElementModuleCode);
 router.get('/prof/:profCIN/elements', elementModuleController.getElementsModuleProf);
 router.get('/module/:moduleId', elementModuleController.getAllElementModulesForModule);
