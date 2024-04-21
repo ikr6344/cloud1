@@ -3,19 +3,19 @@ const db = admin.firestore();
 exports.createNote = async (req, res) => {
   try {
 
-    const { note, bareme, elementModuleCode, etudiantCNE, status } = req.body;
+    const { note, bareme, elementModuleCode, etudiantCNE, state } = req.body;
 
     // Vérifier si l'élément de module existe
     const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).limit(1).get();
     if (elementModuleQuery.empty) {
-      return res.status(404).json({ error: 'L\'élément de module spécifié n\'existe pas pour cette année universitaire.' });
+      return res.status(500).json({ error: 'L\'élément de module spécifié n\'existe pas ' });
     }
     const elementModuleData = elementModuleQuery.docs[0].data();
 
     // Vérifier si l'étudiant existe
     const etudiantQuery = await db.collection('users').where('CNE', '==', etudiantCNE).where('role', '==', 'etudiant').limit(1).get();
     if (etudiantQuery.empty) {
-      return res.status(404).json({ error: 'L\'étudiant spécifié n\'existe pas.' });
+      return res.status(500).json({ error: 'L\'étudiant spécifié n\'existe pas.' });
     }
     const etudiantData = etudiantQuery.docs[0].data();
 
@@ -25,7 +25,7 @@ exports.createNote = async (req, res) => {
       bareme: bareme,
       elementModuleCode: elementModuleCode,  // Code de l'élément de module
       etudiantCNE: etudiantCNE, // CNE de l'étudiant
-      Status: status,
+      Status: state,
       AnneeUniversitaire: '2023/2024',
       timeStamp: admin.firestore.FieldValue.serverTimestamp()
     });

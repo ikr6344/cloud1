@@ -20,7 +20,7 @@ const corsOptions = {
 
 
 
-app.use(cors(corsOptions));
+
 
 // Middleware pour les données JSON et URL encodées
 app.use(express.json());

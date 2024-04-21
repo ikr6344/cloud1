@@ -6,12 +6,12 @@ exports.createElementModule = async (req, res) => {
   try {
     const { code, nom, description, pourcentage, moduleId, profCIN, AnneeUniversitaire } = req.body;
 
-    // Vérifier si le module existe
-    const moduleRef = db.collection('modules').doc(moduleId);
-    const moduleDoc = await moduleRef.get();
-    if (!moduleDoc.exists) {
-      return res.status(500).json({ error: 'Le module spécifié n\'existe pas.' });
+    const moduleQuery = await db.collection('modules').where('code', '==', moduleId).limit(1).get();
+    if (moduleQuery.empty) {
+        return res.status(404).json({ error: 'Le module spécifié n\'existe pas.' });
     }
+    
+    const moduleRef = moduleQuery.docs[0].id;
 
     // Vérifier si le professeur existe
     const ProfQuery = await db.collection('users').where('CIN', '==', profCIN).where('role', '==', 'prof').limit(1).get();
@@ -37,34 +37,33 @@ exports.createElementModule = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la création de l\'élément de module.' });
   }
 };
-exports.getElementModulesByCode = async (req, res) => {
+exports.getElementModuleByCode = async (req, res) => {
   try {
-    const { code } = req.params; // Récupérer le code à partir des paramètres de la requête
+    const { code } = req.params; // Retrieve the code from the request parameters
 
-    // Effectuer une requête à la base de données pour récupérer les éléments de module correspondant au code spécifié
-    const elementModulesQuery = await db.collection('elementModule').where('code', '==', code).get();
+    // Perform a query to the database to retrieve the element module corresponding to the specified code
+    const elementModuleQuery = await db.collection('elementModule').where('code', '==', code).limit(1).get();
 
-    // Vérifier si des éléments de module ont été trouvés
-    if (elementModulesQuery.empty) {
-      return res.status(404).json({ error: 'Aucun élément de module trouvé pour le code spécifié.' });
+    // Check if an element module was found
+    if (elementModuleQuery.empty) {
+      return res.status(404).json({ error: 'No element module found for the specified code.' });
     }
 
-    // Récupérer les données des éléments de module trouvés et les renvoyer en tant que réponse
-    const elementModules = [];
-    elementModulesQuery.forEach(doc => {
-      const elementModuleData = doc.data();
-      elementModules.push({
-        id: doc.id,
-        ...elementModuleData
-      });
-    });
+    // Retrieve the data of the first element module found and return it as a response
+    const doc = elementModuleQuery.docs[0];
+    const elementModuleData = doc.data();
+    const elementModule = {
+      id: doc.id,
+      ...elementModuleData
+    };
 
-    res.status(200).json(elementModules);
+    res.status(200).json(elementModule);
   } catch (error) {
-    console.error('Erreur lors de la récupération des éléments de module par code :', error);
-    res.status(500).json({ error: 'Erreur serveur lors de la récupération des éléments de module par code.' });
+    console.error('Error retrieving element module by code:', error);
+    res.status(500).json({ error: 'Server error while retrieving element module by code.' });
   }
 };
+
 
 // Récupérer tous les éléments de module
 exports.getAllElementModules = async (req, res) => {

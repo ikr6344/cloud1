@@ -33,7 +33,7 @@ exports.createEtudiant = async (req, res) => {
         prenom: student.prenom,
         dateNaissance: student.dateNaissance,
         CIN: student.CIN,
-        CNE: student.CNE,
+        CNE: student.CNE.toString(),
         email: student.email,
         motDePasse: student.motDePasse,
         role: "etudiant",
@@ -232,7 +232,7 @@ exports.getEtudiantsByElementModule = async (req, res) => {
 // Fonction pour récupérer un étudiant par son CNE
 exports.getEtudiantByCNE = async (req, res) => {
   try {
-    const cne = req.params.cne; // Récupérer le CNE depuis les paramètres de la requête
+    const { cne } = req.params;// Récupérer le CNE depuis les paramètres de la requête
 
     // Effectuer une requête pour récupérer l'étudiant avec le CNE spécifié
     const etudiantQuery = await db.collection('users').where('CNE', '==', cne).where('role', '==', 'etudiant').limit(1).get();
