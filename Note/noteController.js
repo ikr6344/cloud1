@@ -61,7 +61,8 @@ exports.getNotesForElementModule = async (req, res) => {
 // Récupérer toutes les notes
 exports.getAllNotes = async (req, res) => {
   try {
-    const snapshot = await db.collection('notes').get();
+    // Query the collection 'notes' ordered by timestamp in descending order
+    const snapshot = await db.collection('notes').orderBy('timeStamp', 'desc').get();
     const notes = [];
     snapshot.forEach(doc => {
       notes.push({ id: doc.id, ...doc.data() });
@@ -72,6 +73,7 @@ exports.getAllNotes = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la récupération des notes.' });
   }
 };
+
 
 // Récupérer une note par son ID
 exports.getNoteById = async (req, res) => {
@@ -145,9 +147,9 @@ exports.getNoteByEtudiantCNE = async (req, res) => {
     }
 
     // Extraire les données de la note
-    const noteData = noteQuery.docs[0].data();
+    const notesData = noteQuery.docs.map(doc => doc.data());
 
-    res.json(noteData); // Retourner les données de la note
+    res.json(notesData); // Retourner les données de la note
   } catch (error) {
     console.error('Erreur lors de la récupération de la note de l\'étudiant :', error);
     res.status(500).json({ error: 'Erreur serveur lors de la récupération de la note de l\'étudiant.' });

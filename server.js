@@ -10,8 +10,8 @@ const app = express();
 
 // Définissez vos options CORS
 const corsOptions = {
-  origin: ['http://localhost:3001', 'https://n-fbk56xdabywdhcimuefeji2byh2tmn3qv4kblpi-0lu-script.googleusercontent.com'], // Autorisez plusieurs origines
-  methods: ['GET', 'POST'], // Autorisez les méthodes GET et POST
+  origin: ['http://localhost:3001', 'https://n-jdykyjkhch4zmxlufj6ixfdhfp2tmn3qv4kblpi-0lu-script.googleusercontent.com'], // Autorisez plusieurs origines
+  methods: ['GET', 'POST','DELETE'], // Autorisez les méthodes GET et POST
   credentials: true, // Autorisez l'envoi de cookies avec la demande
 };
 
