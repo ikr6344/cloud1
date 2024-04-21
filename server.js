@@ -7,20 +7,20 @@ admin.initializeApp({
 
 const cors = require('cors');
 const app = express();
+
+// Définissez vos options CORS
 const corsOptions = {
-  origin: 'http://localhost:3001', // Change this to your frontend URL
+  origin: ['http://localhost:3001', 'https://n-fbk56xdabywdhcimuefeji2byh2tmn3qv4kblpi-0lu-script.googleusercontent.com'], // Autorisez plusieurs origines
+  methods: ['GET', 'POST'], // Autorisez les méthodes GET et POST
+  credentials: true, // Autorisez l'envoi de cookies avec la demande
 };
 
-
-
+// Utilisez CORS avec vos options configurées
 app.use(cors(corsOptions));
 
 // Middleware pour les données JSON et URL encodées
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Ajoutez cette ligne pour activer CORS pour toutes les routes
-app.use(cors());
 
 // Routes pour chaque collection
 const filiereRoutes = require('./Filiere/filiereRoutes');
@@ -30,6 +30,7 @@ const noteRoutes = require('./Note/noteRoutes');
 const profRoutes = require('./Professeur/profRoutes');
 const elementmoduleRoutes = require('./ElementModule/elementModuleRoutes');
 const adminRoutes = require('./Admin/adminRoutes');
+const devoirRoutes = require('./devoir/devoirRoute');
 
 app.use('/filiere', filiereRoutes);
 app.use('/etudiant', etudiantRoutes);
@@ -38,6 +39,7 @@ app.use('/note', noteRoutes);
 app.use('/prof', profRoutes);
 app.use('/elementModule', elementmoduleRoutes);
 app.use('/admin', adminRoutes);
+app.use('/devoir', devoirRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -75,13 +75,16 @@ exports.getProfById = async (req, res) => {
 exports.updateProf = async (req, res) => {
   try {
     const profId = req.params.id;
-    const { nom, prenom, telephone, photo, specialite } = req.body;
+    const { nom, prenom, email,telephone,motDePasse,CIN, photo, specialite } = req.body;
 
     await db.collection('users').doc(profId).update({
       nom: nom,
       prenom: prenom,
       telephone: telephone,
       photo: photo,
+      email:email,
+      CIN:CIN,
+      motDePasse:motDePasse,
       specialite: specialite
     });
 
@@ -91,6 +94,7 @@ exports.updateProf = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la mise à jour du professeur.' });
   }
 };
+
 exports.deleteProf = async (req, res) => {
   try {
     const profId = req.params.id;
@@ -118,4 +122,3 @@ exports.deleteProf = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la suppression du professeur.' });
   }
 };
-

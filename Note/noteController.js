@@ -2,8 +2,7 @@ const admin = require('firebase-admin');
 const db = admin.firestore();
 exports.createNote = async (req, res) => {
   try {
-
-    const { note, bareme, elementModuleCode, etudiantCNE, status } = req.body;
+    const { note, bareme, elementModuleCode, etudiantCNE, Status } = req.body;
 
     // Vérifier si l'élément de module existe
     const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).limit(1).get();
@@ -25,8 +24,8 @@ exports.createNote = async (req, res) => {
       bareme: bareme,
       elementModuleCode: elementModuleCode,  // Code de l'élément de module
       etudiantCNE: etudiantCNE, // CNE de l'étudiant
-      Status: status,
-      AnneeUniversitaire: '2023/2024',
+      Status: Status,
+      AnneeUniversitaire: '2023-2024',
       timeStamp: admin.firestore.FieldValue.serverTimestamp()
     });
 

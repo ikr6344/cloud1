@@ -16,5 +16,6 @@ router.put('/:id', devoirController.updateDevoir);
 
 // Route pour supprimer un devoir par son ID
 router.delete('/:id', devoirController.deleteDevoir);
+router.get('/dev/:elementModuleId', devoirController.getDevoirsByElementModuleId);
 
 module.exports = router;

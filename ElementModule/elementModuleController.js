@@ -65,6 +65,39 @@ exports.getElementModulesByCode = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la récupération des éléments de module par code.' });
   }
 };
+exports.getAllElementModulesForModule = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+
+    // Vérifier si le module existe
+    const moduleRef = db.collection('modules').doc(moduleId);
+    const moduleDoc = await moduleRef.get();
+    if (!moduleDoc.exists) {
+      return res.status(404).json({ error: 'Le module spécifié n\'existe pas.' });
+    }
+
+    // Récupérer tous les éléments de module associés au module spécifié
+    const elementModulesQuery = await db.collection('elementModule').where('moduleId', '==', moduleRef).get();
+    const elementModules = [];
+    elementModulesQuery.forEach(doc => {
+      const elementModuleData = doc.data();
+      elementModules.push({
+        id: doc.id,
+        code: elementModuleData.code,
+        nom: elementModuleData.nom,
+        description: elementModuleData.description,
+        pourcentage: elementModuleData.pourcentage,
+        AnneeUniversitaire: elementModuleData.AnneeUniversitaire,
+        profCIN: elementModuleData.profCIN
+      });
+    });
+
+    res.status(200).json({ elementModules });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des éléments de module pour le module spécifié :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des éléments de module.' });
+  }
+};
 
 // Récupérer tous les éléments de module
 exports.getAllElementModules = async (req, res) => {

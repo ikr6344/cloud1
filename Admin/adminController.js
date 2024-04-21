@@ -101,3 +101,18 @@ exports.deleteAdmin = async (req, res) => {
     res.status(500).json({ error: 'Erreur serveur lors de la suppression de l\'administrateur.' });
   }
 };
+exports.getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id; // Récupérer l'ID de l'utilisateur depuis les paramètres de la requête
+    const userDoc = await db.collection('users').doc(userId).get(); // Récupérer le document utilisateur avec l'ID spécifié
+
+    if (!userDoc.exists) { // Vérifier si le document utilisateur n'existe pas
+      res.status(404).json({ error: 'Utilisateur non trouvé.' });
+    } else {
+      res.json({ id: userDoc.id, ...userDoc.data() }); // Renvoyer les données de l'utilisateur
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'utilisateur :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération de l\'utilisateur.' });
+  }
+};
