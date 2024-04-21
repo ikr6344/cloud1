@@ -26,7 +26,7 @@ exports.createNote = async (req, res) => {
       elementModuleCode: elementModuleCode,  // Code de l'élément de module
       etudiantCNE: etudiantCNE, // CNE de l'étudiant
       Status: state,
-      AnneeUniversitaire: '2023/2024',
+      AnneeUniversitaire: '2023-2024',
       timeStamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
@@ -187,5 +187,36 @@ exports.getNoteByEtudiantCNEEtModule = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la récupération de la note de l\'étudiant :', error);
     res.status(500).json({ error: 'Erreur serveur lors de la récupération de la note de l\'étudiant.' });
+  }
+};
+exports.getNotesByElementModuleCodeetAnnee = async (req, res) => {
+  try {
+    const { elementModuleCode, AnneeUniversitaire } = req.params;
+
+    // Vérifier si l'élément de module existe pour l'année universitaire spécifiée
+    const elementModuleQuery = await db.collection('elementModule').where('code', '==', elementModuleCode).where('AnneeUniversitaire', '==', AnneeUniversitaire).limit(1).get();
+    if (elementModuleQuery.empty) {
+      return res.status(404).json({ error: 'L\'élément de module spécifié n\'existe pas pour cette année universitaire.' });
+    }
+    const elementModuleData = elementModuleQuery.docs[0].data();
+
+    // Récupérer les notes associées à l'élément de module
+    const notesQuery = await db.collection('notes').where('elementModuleCode', '==', elementModuleCode).where('AnneeUniversitaire', '==', AnneeUniversitaire).get();
+    const notes = [];
+    notesQuery.forEach(doc => {
+      const note = doc.data();
+      notes.push({
+        id: doc.id,
+        note: note.note,
+        bareme: note.bareme,
+        etudiantCNE: note.etudiantCNE,
+        Status: note.Status
+      });
+    });
+
+    res.status(200).json({ notes });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des notes pour l\'élément de module :', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des notes pour l\'élément de module.' });
   }
 };
